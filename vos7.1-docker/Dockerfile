@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:12.04
 
 # Install Virtuoso prerequisites
 RUN apt-get update \
