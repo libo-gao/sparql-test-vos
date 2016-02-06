@@ -2,7 +2,7 @@ FROM ubuntu:12.04
 
 # Install Virtuoso prerequisites
 RUN apt-get update \
-        && apt-get install -y build-essential debhelper autotools-dev autoconf automake unzip wget net-tools git libtool flex bison gperf gawk m4 libssl-dev libreadline-dev libreadline-dev openssl
+        && apt-get install -y build-essential debhelper autotools-dev autoconf automake unzip wget net-tools git libtool flex bison gperf gawk m4 libssl-dev libreadline-dev libreadline-dev openssl git
 
 # Set Virtuoso commit SHA to Virtuoso 7.2 release (14/02/2015)
 #ENV VIRTUOSO_COMMIT a5e1f5bb055761c389ea50f8f8849b73e5241018 
