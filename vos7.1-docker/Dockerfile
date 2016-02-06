@@ -1,43 +1,29 @@
 FROM ubuntu:12.04
+MAINTAINER Nolan Nichols <orcid.org/0000-0003-1099-3328>
+ENV UPDATED "Fri Aug  8 13:30:08 PDT 2014"
 
-# Install Virtuoso prerequisites
-RUN apt-get update \
-        && apt-get install -y build-essential debhelper autotools-dev autoconf automake unzip wget net-tools git libtool flex bison gperf gawk m4 libssl-dev libreadline-dev libreadline-dev openssl
+# Build virtuoso opensource debian package from github
+RUN echo "deb http://us.archive.ubuntu.com/ubuntu/ precise-backports main restricted universe multiverse" >> /etc/apt/sources.list
+RUN apt-get update
+RUM apt-get install -y wget git
+RUN apt-get install -y build-essential debhelper autotools-dev autoconf automake unzip wget net-tools > /dev/null
+RUN apt-get install -y libtool flex bison gperf gawk m4 libssl-dev libreadline-dev openssl > /dev/null
+RUN wget --no-check-certificate -q https://github.com/openlink/virtuoso-opensource/archive/v7.1.0.zip -O virtuoso-opensource.zip
+RUN unzip -q virtuoso-opensource.zip
+RUN cd virtuoso-opensource-7.1.0/ && dpkg-buildpackage -us -uc
+RUN cd .. && dpkg -i virtuoso-opensource_7.1_amd64.deb
 
-# Set Virtuoso commit SHA to Virtuoso 7.2 release (14/02/2015)
-#ENV VIRTUOSO_COMMIT a5e1f5bb055761c389ea50f8f8849b73e5241018 
-#Set to 7.1 release instead
-ENV VIRTUOSO_COMMIT 658e00de9b4e2e04d88bff6fcdecab28d08019d5
-
-# Get Virtuoso source code from GitHub and checkout specific commit
-# Make and install Virtuoso (by default in /usr/local/virtuoso-opensource)
-RUN git clone https://github.com/openlink/virtuoso-opensource.git \
-        && cd virtuoso-opensource \
-        && git checkout ${VIRTUOSO_COMMIT} \
-        && ./autogen.sh \
-        && CFLAGS="-O2 -m64" && export CFLAGS && ./configure --disable-bpel-vad --enable-conductor-vad --disable-dbpedia-vad --disable-demo-vad --disable-isparql-vad --disable-ods-vad --disable-sparqldemo-vad --disable-syncml-vad --disable-tutorial-vad --with-readline --program-transform-name="s/isql/isql-v/" \
-        && make && make install \
-        && ln -s /usr/local/virtuoso-opensource/var/lib/virtuoso/ /var/lib/virtuoso \
-        && cd .. \
-        && rm -r /virtuoso-opensource
-
-# Add Virtuoso bin to the PATH
-ENV PATH /usr/local/virtuoso-opensource/bin/:$PATH
-
-# Add Virtuoso config
-ADD virtuoso.ini /virtuoso.ini
-
-# Add dump_nquads_procedure
-ADD dump_nquads_procedure.sql /dump_nquads_procedure.sql
-
-# Add Virtuoso log cleaning script
-ADD clean-logs.sh /clean-logs.sh
+# Remove build files
+RUN rm -rf virtuoso-opensource.zip virtuoso-opensource-7.1.0/ virtuoso-opensource_7.1_amd64.deb virtuoso-opensource_7.1.dsc
+RUN rm -rf virtuoso-opensource_7.1.tar.gz virtuoso-opensource-7.1.0 virtuoso-opensource_7.1_amd64.changes
+RUN apt-get remove -y build-essential debhelper autotools-dev autoconf automake unzip wget net-tools
 
 # Add startup script
 ADD startup.sh /startup.sh
 
-WORKDIR /var/lib/virtuoso/db
+# Run virtuoso in the foreground
 EXPOSE 8890
 EXPOSE 1111
-
+WORKDIR /var/lib/virtuoso/db
+#CMD ["/usr/bin/virtuoso-t", "+wait", "+foreground"]
 CMD ["/bin/bash", "/startup.sh"]
