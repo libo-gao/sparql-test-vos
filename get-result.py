@@ -1,7 +1,7 @@
-path = "test3"
+path = "stress-workloads/watdiv-stress-100/"
 
-f1 = file("test.3.desc", "r")
-f2 = file("result100/"+path, "r")
+f1 = file(path+"test.1.desc", "r")
+f2 = file("result-100M/test1", "r")
 
 count = [0 for i in range(127)]
 time = [0.0 for i in range(127)]
@@ -19,7 +19,7 @@ while template:
 f1.close()
 f2.close()
 
-f3 = file("result100/result3",'w')
+f3 = file("result100/test1",'w')
 
 for i in range(0,127):
 	f3.write(str(time[i]))
